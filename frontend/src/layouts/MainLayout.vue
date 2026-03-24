@@ -11,25 +11,26 @@ import {
   ChevronRight,
 } from 'lucide-vue-next'
 
-
 const route = useRoute()
+
+// sidebar
 const sidebarOpen = ref(true)
 const isMobile = ref(false)
 
+// dark mode
+const darkMode = ref(true)
 
+// navigation
 const navigation = [
   { name: 'Dashboard', path: `/portique/${route.params.id}`, icon: LayoutDashboard },
   { name: 'Portiques', path: '/portiques', icon: Building2 },
   { name: 'Parametres', path: '/settings', icon: Settings },
 ]
 
+// responsive
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024
-  if (isMobile.value) {
-    sidebarOpen.value = false
-  } else {
-    sidebarOpen.value = true
-  }
+  sidebarOpen.value = !isMobile.value
 }
 
 const toggleSidebar = () => {
@@ -37,16 +38,39 @@ const toggleSidebar = () => {
 }
 
 const closeSidebarOnMobile = () => {
-  if (isMobile.value) {
-    sidebarOpen.value = false
+  if (isMobile.value) sidebarOpen.value = false
+}
+
+// theme toggle
+const toggleTheme = () => {
+  darkMode.value = !darkMode.value
+
+  if (darkMode.value) {
+    document.documentElement.classList.add("dark")
+    localStorage.setItem("theme", "dark")
+  } else {
+    document.documentElement.classList.remove("dark")
+    localStorage.setItem("theme", "light")
   }
 }
 
+// mounted (UN SEUL)
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
+
+  // charger thème sauvegardé
+  const saved = localStorage.getItem("theme")
+
+  if (saved === "light") {
+    darkMode.value = false
+    document.documentElement.classList.remove("dark")
+  } else {
+    document.documentElement.classList.add("dark")
+  }
 })
 
+// cleanup
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
@@ -94,7 +118,11 @@ onUnmounted(() => {
     </aside>
 
     <div class="flex-1 flex flex-col overflow-hidden">
-      <Navbar :on-toggle-sidebar="toggleSidebar" />
+      <Navbar 
+        :on-toggle-sidebar="toggleSidebar"
+        :darkMode="darkMode"
+        :toggleTheme="toggleTheme"
+      />
 
       <main class="flex-1 overflow-auto">
         <div class="p-4 md:p-8">

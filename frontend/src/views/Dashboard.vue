@@ -91,34 +91,91 @@ onMounted(async () => {
 
 //  Graphe CPS
 
+
+// 🔍 Trier les mesures
 const sortedMesures = computed(() =>
   [...chartMesures.value].sort(
-    (a: any, b: any) => new Date(a.date_mesure).getTime() - new Date(b.date_mesure).getTime()
+    (a: any, b: any) =>
+      new Date(a.date_mesure).getTime() - new Date(b.date_mesure).getTime()
   )
 )
+
+// 🌙 Détection du thème
+
+const isDark = ref(
+  document.documentElement.classList.contains("dark")
+)
+
+// 🔁 Observer changement thème
+const observer = new MutationObserver(() => {
+  isDark.value = document.documentElement.classList.contains("dark")
+})
+
+onMounted(() => {
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"]
+  })
+})
+
+// 📊 DATA GRAPH (AVEC COULEUR DYNAMIQUE)
 const cpsData = computed<ChartData<'line'>>(() => ({
   labels: sortedMesures.value.map((m: any) =>
     new Date(m.date_mesure).toLocaleTimeString()
   ),
+
   datasets: [
     {
       label: "CPS",
       data: sortedMesures.value.map((m: any) => m.cps),
-      borderColor: 'rgb(37, 99, 235)',
-      backgroundColor: 'rgba(37, 99, 235, 0.1)',
+
+      // 🎯 couleur selon thème
+      borderColor: isDark.value
+        ? 'rgb(37, 99, 235)'   // 🔵 dark
+        : 'rgb(34, 197, 94)',  // 🟢 light
+
+      backgroundColor: isDark.value
+        ? 'rgba(37, 99, 235, 0.15)'
+        : 'rgba(34, 197, 94, 0.15)',
+
       tension: 0.4,
-      fill: true
+      fill: true,
+      pointRadius: 3
     }
   ]
 }))
 
+// ⚙️ OPTIONS GRAPH
 const options = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
+
   plugins: {
     legend: { display: false }
+  },
+
+  scales: {
+    x: {
+      ticks: {
+        color: isDark.value ? '#e5e7eb' : '#374151'
+      },
+      grid: {
+        color: isDark.value ? '#374151' : '#e5e7eb'
+      }
+    },
+    y: {
+      ticks: {
+        color: isDark.value ? '#e5e7eb' : '#374151'
+      },
+      grid: {
+        color: isDark.value ? '#374151' : '#e5e7eb'
+      }
+    }
   }
 }))
+
+
+
 
 const barriere = ref(false)
 const alarme = ref(false)
