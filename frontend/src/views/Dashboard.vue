@@ -1,4 +1,8 @@
 <script setup lang="ts">
+
+
+import socket from "../lib/socket";
+
 import { computed, ref, onMounted } from 'vue'
 import axios from 'axios'
 
@@ -51,8 +55,33 @@ const portiqueNom = ref("")
 //  DONNÉES RPM
 const cps = ref(0)
 const cpm = ref(0)
-const tension = ref(0)
 const chartMesures = ref([])
+
+//send mqtt
+
+const lld = ref(3)
+const hld = ref(5)
+const ht = ref(2000)
+const sendTrame = async () => {
+  try {
+    await axios.post("http://localhost:3000/api/control/send-trame", {
+      CP: 1, // ou cps.value si tu veux
+      LLD: lld.value,
+      HLD: hld.value,
+      HT: ht.value,
+      B: barriere.value ? 1 : 0,
+      A: alarme.value ? 1 : 0
+    });
+
+    console.log("📤 Trame envoyée");
+  } catch (err) {
+    console.error("❌ erreur envoi trame", err);
+  }
+};
+
+
+
+
 
 
 // Charger depuis MongoDB
@@ -64,7 +93,7 @@ onMounted(async () => {
 
     cps.value = latest.data?.cps || 0
     cpm.value = latest.data?.cpm || 0
-    tension.value = latest.data?.tension || 0
+    ht.value = latest.data?.ht || 0
 
     const chart = await axios.get(
   `http://localhost:3000/api/mesure/chart/${portiqueId}`
@@ -138,7 +167,7 @@ const cpsData = computed<ChartData<'line'>>(() => ({
         ? 'rgba(37, 99, 235, 0.15)'
         : 'rgba(34, 197, 94, 0.15)',
 
-      tension: 0.4,
+      ht: 0.4,
       fill: true,
       pointRadius: 3
     }
@@ -262,6 +291,29 @@ onMounted(async () => {
 
 })
 
+
+//test mqtt
+
+
+onMounted(() => {
+  socket.on("mqttData", (data) => {
+    console.log("📊 Data temps réel:", data);
+
+    // 🔥 Mise à jour dynamique
+    if (data.cps !== undefined) cps.value = data.cps
+    if (data.cpm !== undefined) cpm.value = data.cpm
+
+
+    if (data.lld !== undefined) lld.value = data.lld
+    if (data.hld !== undefined) hld.value = data.hld
+    if (data.ht !== undefined) ht.value = data.ht
+
+    if (data.barriere !== undefined) barriere.value = data.barriere
+    if (data.alarme !== undefined) alarme.value = data.alarme
+  });
+});
+
+
 </script>
 
 
@@ -275,7 +327,7 @@ onMounted(async () => {
           Radiation Portal Dashboard - {{ portiqueNom }}
         </h1>
         <p class="text-muted-foreground">
-           Surveillance temps réel des portiques RPM – CNESTEN
+           Surveillance temps réel des portiques RPM - CNESTEN
         </p>
       </div>
 
@@ -283,6 +335,10 @@ onMounted(async () => {
         <Upload class="mr-2 h-4 w-4" />
         Importer Rapport
       </Button>
+      <!---------------------- Button test mqtt ------------------------>
+      <button @click="sendTrame">
+        Envoyer Trame
+      </button>
     </div>
 
 
@@ -324,10 +380,11 @@ onMounted(async () => {
           <Zap class="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div class="text-2xl font-bold">{{ tension }} V</div>
-          <p class="text-xs text-muted-foreground">
-            Alimentation portique
-          </p>
+          <div class="text-2xl font-bold">{{ ht }} V</div>
+            <p class="text-xs text-muted-foreground">
+              Haute tension (HT)
+            </p>
+
         </CardContent>
       </Card>
 
