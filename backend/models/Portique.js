@@ -12,4 +12,8 @@ const PortiqueSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model("Portique", PortiqueSchema);
+module.exports = mongoose.model(
+  "Portique",
+  PortiqueSchema,
+  "portiques" // 👈 nom EXACT dans MongoDB
+);

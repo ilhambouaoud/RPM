@@ -1,22 +1,23 @@
 const express = require("express");
 const router = express.Router();
-const Controle = require("../models/Controle");
-
 
 const controller = require("../controllers/controleController");
 
-router.get("/send-trame", controller.sendTrame);
-
-
-
+// 🔥 CORRIGÉ : POST + route cohérente
+router.post("/send-trame", controller.sendTrame);
 
 router.get("/controle", async (req, res) => {
-  const last = await Controle.findOne().sort({ date: -1 });
+  const last = await require("../models/Controle")
+    .findOne()
+    .sort({ date: -1 });
+
   res.json(last);
 });
 
 router.post("/barriere", async (req, res) => {
   const { state } = req.body;
+
+  const Controle = require("../models/Controle");
 
   const controle = new Controle({
     barriere: state,
@@ -30,6 +31,8 @@ router.post("/barriere", async (req, res) => {
 
 router.post("/alarme", async (req, res) => {
   const { state } = req.body;
+
+  const Controle = require("../models/Controle");
 
   const controle = new Controle({
     alarme: state,

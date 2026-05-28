@@ -1,34 +1,84 @@
 const Utilisateur = require("../models/Utilisateur");
+const bcrypt = require("bcrypt");
 
 exports.login = async (req, res) => {
+
   try {
+
     const { email, password } = req.body;
 
+    console.log("LOGIN BODY =", req.body);
+
+    // chercher user
     const user = await Utilisateur.findOne({ email });
 
+    console.log("USER FOUND =", user);
+
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      return res.status(401).json({
+        message: "User not found"
+      });
     }
 
+    // vérifier actif
     if (!user.is_active) {
-      return res.status(403).json({ message: "Account disabled" });
+      return res.status(403).json({
+        message: "Account disabled"
+      });
     }
 
-    if (password !== user.password_hash) {
-      return res.status(401).json({ message: "Invalid password" });
+    // ✅ comparer bcrypt
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password_hash
+    );
+
+    console.log("PASSWORD MATCH =", isMatch);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Invalid password"
+      });
     }
 
-    user.last_login = new Date();
-    await user.save();
+    // ✅ créer session
+    req.session.userId = user._id;
 
-    res.json({
-      message: "Login success",
-      token: "secure-token",
-      role: user.role,
-      username: user.username
+    console.log("SESSION USER ID =", req.session.userId);
+
+    // sauvegarder session
+    req.session.save(async (err) => {
+
+      if (err) {
+
+        console.log("SESSION SAVE ERROR =", err);
+
+        return res.status(500).json({
+          message: "Session error"
+        });
+      }
+
+      // update last login
+      user.last_login = new Date();
+      await user.save();
+
+      console.log("SESSION SAVED SUCCESS");
+
+      res.json({
+        message: "Login success",
+        role: user.role,
+        username: user.username,
+        userId: user._id
+      });
+
     });
 
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+
+    console.error("LOGIN ERROR:", error);
+
+    res.status(500).json({
+      message: "Server error"
+    });
   }
 };

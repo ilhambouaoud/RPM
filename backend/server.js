@@ -3,9 +3,10 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const http = require("http");
 const socketIo = require("socket.io");
+const session = require("express-session");
 
 // 🔥 MQTT
-const { initMQTT } = require("./mqtt/mqttClient"); // adapte si chemin différent
+const { initMQTT } = require("./mqtt/mqttClient");
 
 const app = express();
 const server = http.createServer(app);
@@ -15,8 +16,30 @@ const io = socketIo(server, {
   cors: { origin: "*" }
 });
 
-app.use(cors());
+/* ------------------ CORS ------------------ */
+
+app.use(cors({
+  origin: "http://localhost:5000",
+  credentials: true
+}));
+
+/* ------------------ BODY PARSER ------------------ */
+
 app.use(express.json());
+
+/* ------------------ SESSION ------------------ */
+
+app.use(session({
+  secret: "rpm_secret_key",
+  resave: false,
+  saveUninitialized: false,
+
+  cookie: {
+    secure: false,
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 // 24h
+  }
+}));
 
 /* ------------------ MongoDB ------------------ */
 
@@ -24,9 +47,9 @@ mongoose.connect("mongodb://127.0.0.1:27017/RPM_Project")
   .then(() => console.log("MongoDB connecté"))
   .catch(err => console.log(err));
 
-/* ------------------ MQTT INIT 🔥 ------------------ */
+/* ------------------ MQTT INIT ------------------ */
 
-initMQTT(io);   // ✅ TRÈS IMPORTANT
+initMQTT(io);
 
 /* ------------------ Routes ------------------ */
 
@@ -37,6 +60,7 @@ app.use("/api", require("./routes/controleRoutes"));
 app.use("/api", require("./routes/portiqueRoutes"));
 app.use("/api", require("./routes/reportRoutes"));
 app.use("/api", require("./routes/testRoutes"));
+app.use("/api/calibration", require("./routes/calibrationRoutes"));
 
 /* ------------------ Start Server ------------------ */
 

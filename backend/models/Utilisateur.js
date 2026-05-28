@@ -9,6 +9,11 @@ const UserSchema = new mongoose.Schema({
   last_login: Date,
   date_creation: Date,
 });
-const Utilisateur = mongoose.model("Utilisateur", UserSchema);
+
+const Utilisateur = mongoose.model(
+  "Utilisateur",
+  UserSchema,
+  "utilisateurs" // 👈 NOM EXACT DE LA COLLECTION
+);
 
 module.exports = Utilisateur;

@@ -1,30 +1,113 @@
 const { publishMessage } = require("../mqtt/mqttClient");
+const { client } = require("../mqtt/mqttClient");
+const HT_DEFAULT = 2000
 
 exports.sendTrame = (req, res) => {
 
-  console.log("API sendTrame appelée");
+  console.log("🔥 API sendTrame appelée");
 
-  const CP = 10;
-  const LLD = 20;
-  const HLD = 30;
-  const HT = 40;
-  const B = 1;
-  const A = 0;
+  try {
+    const {
+      mode,   // 🔥 nouveau
+      CP,
+      LLD,
+      HLD,
+      HT,
+      B,
+      A,
+      dV,     // 🔥 nouveau
+      Vmax    // 🔥 nouveau
+    } = req.body;
 
-  // 🔥 TRAME CORRECTE
-  const trame = `#${CP},${LLD},${HLD},${HT},${B},${A}$`;
+    // 🔍 Vérification MODE
+    if (mode === undefined) {
+      return res.status(400).json({
+        error: "❌ mode manquant"
+      });
+    }
 
-  console.log("📤 TRAME:", trame);
+    let trame = "";
 
-  // 🔥 ENVOI MQTT
-  publishMessage("stm32/trame", trame);
+    // ================= MODE 0 : NORMAL =================
+    if (mode === 0) {
 
-  res.json({
-    success: true,
-    topic: "stm32/trame",
-    trame
-  });
+      if (
+        CP === undefined ||
+        LLD === undefined ||
+        HLD === undefined ||
+        B === undefined ||
+        A === undefined
+      ) {
+        return res.status(400).json({
+          error: "❌ Données manquantes pour mode normal"
+        });
+      }
+
+      trame = `#${mode},${CP},${LLD},${HLD},${HT ?? HT_DEFAULT},${B},${A}$`;
+    }
+
+    // ================= MODE 1 : SPECTRUM =================
+    else if (mode === 1) {
+
+      if (
+        LLD === undefined ||
+        dV === undefined ||
+        Vmax === undefined ||
+        B === undefined ||
+        A === undefined
+      ) {
+        return res.status(400).json({
+          error: "❌ Données manquantes pour mode spectrum"
+        });
+      }
+
+      trame = `#${mode},${LLD},${dV},${Vmax},${B},${A}$`;
+    }
+
+    // ================= MODE INVALIDE =================
+    else {
+      return res.status(400).json({
+        error: "❌ mode invalide"
+      });
+    }
+
+    console.log("📤 TRAME:", trame);
+    console.log("🔍 MQTT connected =", client.connected);
+
+    if (!client.connected) {
+      return res.status(500).json({
+        error: "❌ MQTT non connecté"
+      });
+    }
+
+    // ✅ Envoi MQTT
+    client.publish("stm32/trame", trame, {}, (err) => {
+      if (err) {
+        console.log("❌ Publish error:", err);
+        return res.status(500).json({
+          error: "Erreur publish MQTT"
+        });
+      }
+
+      console.log("✅ Publish OK");
+
+      res.json({
+        success: true,
+        trame: trame
+      });
+    });
+
+  } catch (error) {
+    console.error("❌ Erreur sendTrame:", error);
+
+    res.status(500).json({
+      error: "Erreur serveur"
+    });
+  }
 };
+
+
+// ================= AUTRES ROUTES =================
 
 exports.sendMQTTCommand = (req, res) => {
   res.send("MQTT command envoyé");

@@ -1,45 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const Utilisateur = require("../models/Utilisateur");
 
-router.get("/me", async (req, res) => {
-  try {
-    const userId = req.session?.userId;
+// 👉 importer les fonctions depuis le controller
+const { getMe, updateUser } = require("../controllers/userController");
 
-    const user = await Utilisateur.findById(userId);
+// ✅ ROUTE : récupérer utilisateur connecté
+router.get("/me", getMe);
 
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
-    }
+// ✅ ROUTE : mettre à jour utilisateur
+router.put("/user/update/:id", updateUser);
 
-    res.json({
-      id: user._id,
-      username: user.username,
-      email: user.email
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-});
-
-router.post("/user/update/:id", async (req, res) => {
-  const { username, email, password } = req.body;
-
-  const updatedUser = await Utilisateur.findByIdAndUpdate(
-    req.params.id,
-    {
-      username,
-      email,
-      password_hash: password
-    },
-    { new: true }
-  );
-
-  res.json({
-    message: "Utilisateur mis à jour",
-    user: updatedUser
-  });
-});
-
+// 👉 export du router
 module.exports = router;

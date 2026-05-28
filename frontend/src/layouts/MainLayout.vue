@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import Footer from '@/components/Footer.vue'
@@ -9,9 +9,11 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Target,
 } from 'lucide-vue-next'
 
 const route = useRoute()
+
 
 // sidebar
 const sidebarOpen = ref(true)
@@ -20,14 +22,34 @@ const isMobile = ref(false)
 // dark mode
 const darkMode = ref(true)
 
-// navigation
-const navigation = [
-  { name: 'Dashboard', path: `/portique/${route.params.id}`, icon: LayoutDashboard },
-  { name: 'Portiques', path: '/portiques', icon: Building2 },
-  { name: 'Parametres', path: '/settings', icon: Settings },
-]
+// Récupérer l'ID du portique depuis la route
+const portiqueId = computed(() => route.params.id as string)
 
-// responsive
+// Navigation dynamique - le chemin change selon le portique
+const navigation = computed(() => [
+  { 
+    name: 'Dashboard', 
+    path: portiqueId.value ? `/portique/${portiqueId.value}` : '/portiques', 
+    icon: LayoutDashboard 
+  },
+  { 
+    name: 'Porticos', 
+    path: '/portiques', 
+    icon: Building2 
+  },
+  { 
+    name: 'Calibration', 
+    path: portiqueId.value ? `/portique/${portiqueId.value}/calibration` : '/portiques', 
+    icon: Target 
+  },
+  { 
+    name: 'Settings', 
+    path: '/settings', 
+    icon: Settings 
+  },
+])
+
+// Responsive
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024
   sidebarOpen.value = !isMobile.value
@@ -41,7 +63,7 @@ const closeSidebarOnMobile = () => {
   if (isMobile.value) sidebarOpen.value = false
 }
 
-// theme toggle
+// Theme toggle
 const toggleTheme = () => {
   darkMode.value = !darkMode.value
 
@@ -54,23 +76,24 @@ const toggleTheme = () => {
   }
 }
 
-// mounted (UN SEUL)
+// Mounted
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
 
-  // charger thème sauvegardé
+  // Charger thème sauvegardé
   const saved = localStorage.getItem("theme")
 
   if (saved === "light") {
     darkMode.value = false
     document.documentElement.classList.remove("dark")
   } else {
+    darkMode.value = true
     document.documentElement.classList.add("dark")
   }
 })
 
-// cleanup
+// Cleanup
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
@@ -87,30 +110,35 @@ onUnmounted(() => {
       isMobile && !sidebarOpen ? '-translate-x-full' : 'translate-x-0'
     ]">
 
-  <div class="p-4 border-b flex items-center justify-center relative">
-    <img
-      v-if="sidebarOpen"
-      src="@/assets/pictures/CNESTEN_nuit.png"
-      alt="Logo CNESTEN"
-      class="h-20 w-auto"
-    />
-    <button
-      @click="toggleSidebar"
-      class="p-2 hover:bg-accent rounded-md hidden lg:block absolute right-2"
-    >  
-      <ChevronRight v-if="!sidebarOpen" :size="20" />
-      <ChevronLeft v-else :size="20" />
-    </button>
-  </div>
-     
+      <div class="p-4 border-b flex items-center justify-center relative">
+        <img
+          v-if="sidebarOpen"
+          src="@/assets/pictures/CNESTEN_nuit.png"
+          alt="Logo CNESTEN"
+          class="h-20 w-auto"
+        />
+        <button
+          @click="toggleSidebar"
+          class="p-2 hover:bg-accent rounded-md hidden lg:block absolute right-2"
+        >  
+          <ChevronRight v-if="!sidebarOpen" :size="20" />
+          <ChevronLeft v-else :size="20" />
+        </button>
+      </div>
 
       <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <router-link v-for="item in navigation" :key="item.path" :to="item.path" @click="closeSidebarOnMobile" :class="[
-          'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm',
-          route.path === item.path
-            ? 'bg-primary text-primary-foreground'
-            : 'hover:bg-accent hover:text-accent-foreground'
-        ]">
+        <router-link 
+          v-for="item in navigation" 
+          :key="item.path" 
+          :to="item.path" 
+          @click="closeSidebarOnMobile" 
+          :class="[
+            'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm',
+            route.path === item.path || (item.name === 'Dashboard' && route.path.includes('/portique/') && !route.path.includes('/calibration'))
+              ? 'bg-primary text-primary-foreground'
+              : 'hover:bg-accent hover:text-accent-foreground'
+          ]"
+        >
           <component :is="item.icon" :size="20" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
         </router-link>
@@ -130,7 +158,7 @@ onUnmounted(() => {
         </div>
       </main>
 
-      <Footer />
+      <Footer/>
     </div>
   </div>
 </template>

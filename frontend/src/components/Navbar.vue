@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Menu, User, LogOut, ChevronDown } from 'lucide-vue-next'
+import {Menu, User, LogOut, ChevronDown } from 'lucide-vue-next'
 
-// ✅ UNE SEULE déclaration des props
+
+
+
+
 const props = defineProps<{
   onToggleSidebar: () => void
   darkMode: boolean
@@ -12,13 +15,9 @@ const props = defineProps<{
 
 const router = useRouter()
 
-const searchQuery = ref('')
 const accountDropdownOpen = ref(false)
 
-const handleSearch = (e: Event) => {
-  e.preventDefault()
-  console.log('Search:', searchQuery.value)
-}
+
 
 const toggleAccountDropdown = () => {
   accountDropdownOpen.value = !accountDropdownOpen.value
@@ -83,7 +82,7 @@ const handleLogout = () => {
               <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
                 <User :size="18" />
               </div>
-              <span class="hidden sm:block text-sm font-medium">Compte</span>
+              <span class="hidden sm:block text-sm font-medium">Account</span>
               <ChevronDown :size="16" class="hidden sm:block" />
             </button>
 
