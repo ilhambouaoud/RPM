@@ -108,6 +108,44 @@ router.post(
   }
 
 );
+router.post("/logout", async (req, res) => {
+
+  try {
+
+    // update last_login
+    await Utilisateur.findByIdAndUpdate(
+      req.session.userId,
+      {
+        last_login: new Date()
+      }
+    );
+
+    // destroy session
+    req.session.destroy((err) => {
+
+      if (err) {
+
+        return res.status(500).json({
+          message: "Erreur logout"
+        });
+
+      }
+
+      res.json({
+        message: "Logout successful"
+      });
+
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+});
 
 // export
 module.exports = router;

@@ -49,7 +49,23 @@ const closeAccountDropdown = () => {
 }
 
 
-const handleLogout = () => {
+const handleLogout = async () => {
+
+  try {
+
+    await fetch(
+      "http://localhost:5000/logout",
+      {
+        method: "POST",
+        credentials: "include"
+      }
+    );
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
 
   localStorage.removeItem("username")
   localStorage.removeItem("role")
