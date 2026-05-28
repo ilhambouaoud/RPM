@@ -9,25 +9,28 @@ exports.login = async (req, res) => {
 
     console.log("LOGIN BODY =", req.body);
 
-    // chercher user
+    // ✅ chercher utilisateur par email
     const user = await Utilisateur.findOne({ email });
 
     console.log("USER FOUND =", user);
 
+    // ✅ utilisateur existe ?
     if (!user) {
       return res.status(401).json({
-        message: "User not found"
+        message: "Utilisateur introuvable"
       });
     }
 
-    // vérifier actif
+    // ✅ compte actif ?
     if (!user.is_active) {
       return res.status(403).json({
-        message: "Account disabled"
+        message: "Compte désactivé"
       });
     }
 
     // ✅ comparer bcrypt
+    console.log("PASSWORD FROM LOGIN =", password)
+    console.log("HASH FROM DB =", user.password_hash)
     const isMatch = await bcrypt.compare(
       password,
       user.password_hash
@@ -35,9 +38,10 @@ exports.login = async (req, res) => {
 
     console.log("PASSWORD MATCH =", isMatch);
 
+    // ✅ mauvais mot de passe
     if (!isMatch) {
       return res.status(401).json({
-        message: "Invalid password"
+        message: "Mot de passe incorrect"
       });
     }
 
@@ -46,7 +50,7 @@ exports.login = async (req, res) => {
 
     console.log("SESSION USER ID =", req.session.userId);
 
-    // sauvegarder session
+    // ✅ sauvegarder session
     req.session.save(async (err) => {
 
       if (err) {
@@ -54,21 +58,26 @@ exports.login = async (req, res) => {
         console.log("SESSION SAVE ERROR =", err);
 
         return res.status(500).json({
-          message: "Session error"
+          message: "Erreur session"
         });
       }
 
-      // update last login
+      // ✅ update last login
       user.last_login = new Date();
       await user.save();
 
       console.log("SESSION SAVED SUCCESS");
 
+      // ✅ réponse frontend
       res.json({
         message: "Login success",
-        role: user.role,
-        username: user.username,
-        userId: user._id
+
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role
+        }
       });
 
     });
@@ -78,7 +87,7 @@ exports.login = async (req, res) => {
     console.error("LOGIN ERROR:", error);
 
     res.status(500).json({
-      message: "Server error"
+      message: "Erreur serveur"
     });
   }
 };

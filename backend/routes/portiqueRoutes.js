@@ -7,8 +7,13 @@ router.get("/portiques", async (req, res) => {
     const portiques = await Portique.find();
     res.json(portiques);
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur" });
-  }
+
+  console.log("PORTIQUE ERROR =", error);
+
+  res.status(500).json({
+    message: error.message
+  });
+}
 });
 
 router.post("/portiques", async (req, res) => {

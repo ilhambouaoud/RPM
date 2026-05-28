@@ -1,9 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from "vue";
 import { useRouter } from 'vue-router'
 import {Menu, User, LogOut, ChevronDown } from 'lucide-vue-next'
+import axios from "axios";
 
-
+const user = ref({
+  username: "",
+  role: "",
+  email: ""
+});
+const getMe = async () => {
+  try {
+  const res = await axios.get(
+    "http://localhost:3000/api/me",
+    {
+      withCredentials: true
+    }
+  );
+    user.value = res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+onMounted(() => {
+  getMe();
+});
 
 
 
@@ -27,11 +48,18 @@ const closeAccountDropdown = () => {
   accountDropdownOpen.value = false
 }
 
+
 const handleLogout = () => {
-  localStorage.removeItem('token')
+
+  localStorage.removeItem("username")
+  localStorage.removeItem("role")
+  localStorage.removeItem("token")
+
   closeAccountDropdown()
-  router.replace('/login')
+
+  router.replace("/login")
 }
+
 </script>
 
 <template>
@@ -99,8 +127,8 @@ const handleLogout = () => {
               class="absolute right-0 mt-2 w-56 bg-card border rounded-md shadow-lg py-1 z-50"
             >
               <div class="px-4 py-3 border-b">
-                <p class="text-sm font-medium">Aziz Benahmed</p>
-                <p class="text-xs text-muted-foreground">aziz@example.com</p>
+                <p class="text-sm font-medium"> Mr.{{ user.username }} </p>
+                <p class="text-xs text-muted-foreground">email: {{ user.email }}</p>
               </div>
 
               <button

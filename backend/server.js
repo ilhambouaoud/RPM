@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -37,14 +39,15 @@ app.use(session({
   cookie: {
     secure: false,
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 // 24h
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24
   }
 }));
 
 /* ------------------ MongoDB ------------------ */
 
-mongoose.connect("mongodb://127.0.0.1:27017/RPM_Project")
-  .then(() => console.log("MongoDB connecté"))
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connecté"))
   .catch(err => console.log(err));
 
 /* ------------------ MQTT INIT ------------------ */
@@ -67,5 +70,5 @@ app.use("/api/calibration", require("./routes/calibrationRoutes"));
 const PORT = 3000;
 
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

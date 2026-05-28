@@ -1,19 +1,32 @@
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
+
   username: String,
+
   email: String,
+
   password_hash: String,
-  role: String,
-  is_active: Boolean,
+
+  role: {
+    type: String,
+    default: "user"
+  },
+
+  is_active: {
+    type: Boolean,
+    default: true
+  },
+
   last_login: Date,
-  date_creation: Date,
+
+  date_creation: {
+    type: Date,
+    default: Date.now
+  }
+
+}, {
+  collection: "utilisateurs"
 });
 
-const Utilisateur = mongoose.model(
-  "Utilisateur",
-  UserSchema,
-  "utilisateurs" // 👈 NOM EXACT DE LA COLLECTION
-);
-
-module.exports = Utilisateur;
+module.exports = mongoose.model("Utilisateur", UserSchema);
