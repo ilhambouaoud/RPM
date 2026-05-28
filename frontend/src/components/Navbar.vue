@@ -110,7 +110,7 @@ const handleLogout = () => {
               <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
                 <User :size="18" />
               </div>
-              <span class="hidden sm:block text-sm font-medium">Account</span>
+              <span class="hidden sm:block text-sm font-medium">{{user.role}}</span>
               <ChevronDown :size="16" class="hidden sm:block" />
             </button>
 
@@ -127,8 +127,8 @@ const handleLogout = () => {
               class="absolute right-0 mt-2 w-56 bg-card border rounded-md shadow-lg py-1 z-50"
             >
               <div class="px-4 py-3 border-b">
-                <p class="text-sm font-medium"> Mr.{{ user.username }} </p>
-                <p class="text-xs text-muted-foreground">email: {{ user.email }}</p>
+                <p class="text-sm font-medium"> {{ user.username }} </p>
+                <p class="text-xs text-muted-foreground"> {{ user.email }}</p>
               </div>
 
               <button

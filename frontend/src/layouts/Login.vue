@@ -153,6 +153,7 @@ onMounted(() => {
 /* ================= LOGIN ================= */
 
 const login = async () => {
+
   error.value = ""
 
   try {
@@ -166,23 +167,43 @@ const login = async () => {
       },
 
       {
-        withCredentials: true // ✅ IMPORTANT
+        withCredentials: true
       }
     );
 
     console.log("LOGIN SUCCESS =", res.data);
 
-  localStorage.setItem("role", res.data.user.role);
-  localStorage.setItem("username", res.data.user.username);
-  localStorage.setItem("email", res.data.user.email);
+    // SAVE USER DATA
+    localStorage.setItem(
+      "role",
+      res.data.user.role
+    );
+
+    localStorage.setItem(
+      "username",
+      res.data.user.username
+    );
+
+    localStorage.setItem(
+      "email",
+      res.data.user.email
+    );
+
+    // IMPORTANT
+    localStorage.setItem(
+      "user",
+      JSON.stringify(res.data.user)
+    );
+
     router.push("/portiques");
 
   } catch (err) {
 
-    console.error(err);
-
     error.value =
-      err.response?.data?.message || "Login error";
+      err.response?.data?.message ||
+      "Erreur login";
+
   }
-}
+
+};
 </script>

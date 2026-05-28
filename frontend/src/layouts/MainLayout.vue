@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Target,
 } from 'lucide-vue-next'
+import { UserIcon } from 'lucide-vue-next'
 
 const route = useRoute()
 
@@ -26,28 +27,63 @@ const darkMode = ref(true)
 const portiqueId = computed(() => route.params.id as string)
 
 // Navigation dynamique - le chemin change selon le portique
-const navigation = computed(() => [
-  { 
-    name: 'Dashboard', 
-    path: portiqueId.value ? `/portique/${portiqueId.value}` : '/portiques', 
-    icon: LayoutDashboard 
-  },
-  { 
-    name: 'Porticos', 
-    path: '/portiques', 
-    icon: Building2 
-  },
-  { 
-    name: 'Calibration', 
-    path: portiqueId.value ? `/portique/${portiqueId.value}/calibration` : '/portiques', 
-    icon: Target 
-  },
-  { 
-    name: 'Settings', 
-    path: '/settings', 
-    icon: Settings 
-  },
-])
+const navigation = computed(() => {
+
+  const role = localStorage.getItem("role")
+
+  const items = [
+
+    { 
+      name: 'Dashboard', 
+      path: portiqueId.value
+        ? `/portique/${portiqueId.value}`
+        : '/portiques',
+
+      icon: LayoutDashboard 
+    },
+
+    { 
+      name: 'Porticos', 
+      path: '/portiques', 
+      icon: Building2 
+    },
+
+    { 
+      name: 'Calibration', 
+
+      path: portiqueId.value
+        ? `/portique/${portiqueId.value}/calibration`
+        : '/portiques',
+
+      icon: Target 
+    },
+
+    { 
+      name: 'Settings', 
+      path: '/settings', 
+      icon: Settings 
+    }
+
+  ]
+
+  // ✅ ADMIN ONLY
+  if (role === "admin") {
+
+    items.push({
+
+      name: 'Create User',
+
+      path: '/create-user',
+
+      icon: UserIcon
+
+    })
+
+  }
+
+  return items
+
+})
 
 // Responsive
 const checkMobile = () => {

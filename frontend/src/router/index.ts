@@ -29,7 +29,7 @@ const router = createRouter({
   children: [
 
     {
-      path: '/portiques',
+      path: 'portiques',
       redirect: '/portiques'
     },
 
@@ -55,7 +55,7 @@ const router = createRouter({
     },
     
     {
-      path: '/addPortique',
+      path: 'addPortique',
       name: 'AddPortique',
       component: () => import('@/views/addPortique.vue'),
       meta: { requiresAuth: true }
@@ -67,11 +67,22 @@ const router = createRouter({
       component: () => import('@/views/Settings.vue')
     },
     {
-  path: 'test',
-  name: 'Test',
-  component: () => import('@/views/Test.vue')
-}
+    path: 'test',
+    name: 'Test',
+    component: () => import('@/views/Test.vue')
+    },
+    {
+    path: 'create-user',
+    name: 'CreateUser',
 
+    component: () =>
+      import('@/views/CreateUser.vue'),
+
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true
+    }
+  },
   ]
 }
 ]
@@ -81,15 +92,55 @@ router.beforeEach((to, from, next) => {
 
   const username = localStorage.getItem("username")
 
-  if (to.meta.requiresAuth && !username) {
-    next('/login')
-  }
-  else if (username && to.path === '/login') {
-    next('/portiques')
-  }
-  else {
-    next()
-  }
-})
+  const user = JSON.parse(
+    localStorage.getItem("user") || "null"
+  )
 
+  console.log("TO PATH =", to.path)
+  console.log("MATCHED =", to.matched)
+  console.log("USER =", user)
+
+  // NON CONNECTÉ
+  if (
+    to.matched.some(
+      record => record.meta.requiresAuth
+    ) &&
+    !username
+  ) {
+
+    return next('/login')
+
+  }
+
+  // DÉJÀ CONNECTÉ
+  if (
+    username &&
+    to.path === '/login'
+  ) {
+
+    return next('/portiques')
+
+  }
+
+  // ADMIN ONLY
+  if (
+    to.matched.some(
+      record => record.meta.requiresAdmin
+    )
+  ) {
+
+    if (
+      !user ||
+      user.role !== 'admin'
+    ) {
+
+      return next('/portiques')
+
+    }
+
+  }
+
+  next()
+
+})
 export default router
