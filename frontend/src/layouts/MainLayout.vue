@@ -11,7 +11,7 @@ import {
   ChevronRight,
   Target,
 } from 'lucide-vue-next'
-import { UserIcon } from 'lucide-vue-next'
+import { UsersIcon } from 'lucide-vue-next'
 
 const route = useRoute()
 
@@ -31,58 +31,51 @@ const navigation = computed(() => {
 
   const role = localStorage.getItem("role")
 
-  const items = [
+const items = [
 
-    { 
-      name: 'Dashboard', 
-      path: portiqueId.value
-        ? `/portique/${portiqueId.value}`
-        : '/portiques',
+  {
+    name: 'Dashboard',
+    path: portiqueId.value
+      ? `/portique/${portiqueId.value}`
+      : '/portiques',
+    icon: LayoutDashboard
+  },
 
-      icon: LayoutDashboard 
-    },
-
-    { 
-      name: 'Porticos', 
-      path: '/portiques', 
-      icon: Building2 
-    },
-
-    { 
-      name: 'Calibration', 
-
-      path: portiqueId.value
-        ? `/portique/${portiqueId.value}/calibration`
-        : '/portiques',
-
-      icon: Target 
-    },
-
-    { 
-      name: 'Settings', 
-      path: '/settings', 
-      icon: Settings 
-    }
-
-  ]
-
-  // ✅ ADMIN ONLY
-  if (role === "admin") {
-
-    items.push({
-
-      name: 'Create User',
-
-      path: '/create-user',
-
-      icon: UserIcon
-
-    })
-
+  {
+    name: 'Porticos',
+    path: '/portiques',
+    icon: Building2
   }
 
-  return items
+]
 
+// ADMIN ONLY
+if (role === "admin") {
+
+  items.push({
+    name: 'Calibration',
+    path: portiqueId.value
+      ? `/portique/${portiqueId.value}/calibration`
+      : '/portiques',
+    icon: Target
+  })
+
+  items.push({
+    name: 'Users Management',
+    path: '/Users',
+    icon: UsersIcon
+  })
+
+}
+
+// TOUJOURS EN DERNIER
+items.push({
+  name: 'Settings',
+  path: '/settings',
+  icon: Settings
+})
+
+return items
 })
 
 // Responsive

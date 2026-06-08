@@ -6,24 +6,63 @@ const express = require("express");
 
 const router = express.Router();
 
-// importer controller
+// Controllers
 const {
   getMe,
   updateUser
 } = require("../controllers/userController");
 
-// GET USER
-router.get("/me", getMe);
+/* =========================
+   GET USER CONNECTÉ
+========================= */
 
-// UPDATE USER
+router.get(
+  "/me",
+  getMe
+);
+
+/* =========================
+   UPDATE USER CONNECTÉ
+========================= */
+
 router.put(
   "/user/update/:id",
   updateUser
 );
 
-// CREATE USER
-router.post(
+/* =========================
+   LISTE DES UTILISATEURS
+========================= */
 
+router.get(
+  "/all",
+  authSession,
+  isAdmin,
+  async (req, res) => {
+
+    try {
+
+      const users = await Utilisateur.find({
+        _id: { $ne: req.session.userId }
+      }).select("-password_hash");
+
+      res.json(users);
+
+    } catch (error) {
+
+      res.status(500).json({
+        message: error.message
+      });
+
+    }
+
+  }
+);
+/* =========================
+   CREATE USER
+========================= */
+
+router.post(
   "/create",
 
   authSession,
@@ -42,7 +81,6 @@ router.post(
         is_active
       } = req.body;
 
-      // email existe ?
       const exist =
         await Utilisateur.findOne({
           email
@@ -56,14 +94,12 @@ router.post(
 
       }
 
-      // hash password
       const password_hash =
         await bcrypt.hash(
           password,
           10
         );
 
-      // create user
       const newUser =
         new Utilisateur({
 
@@ -73,9 +109,12 @@ router.post(
 
           password_hash,
 
-          role,
+          role: role || "user",
 
-          is_active,
+          is_active:
+            is_active !== undefined
+              ? is_active
+              : true,
 
           date_creation:
             new Date(),
@@ -106,46 +145,169 @@ router.post(
     }
 
   }
-
 );
-router.post("/logout", async (req, res) => {
 
-  try {
+/* =========================
+   EDIT USER
+========================= */
 
-    // update last_login
-    await Utilisateur.findByIdAndUpdate(
-      req.session.userId,
-      {
-        last_login: new Date()
-      }
-    );
+router.put(
+  "/edit/:id",
 
-    // destroy session
-    req.session.destroy((err) => {
+  authSession,
 
-      if (err) {
+  isAdmin,
 
-        return res.status(500).json({
-          message: "Erreur logout"
-        });
+  async (req, res) => {
 
-      }
+    try {
+
+      const {
+
+        username,
+        email,
+        role,
+        is_active
+
+      } = req.body;
+
+      const user =
+        await Utilisateur
+          .findByIdAndUpdate(
+
+            req.params.id,
+
+            {
+              username,
+              email,
+              role,
+              is_active
+            },
+
+            {
+              new: true
+            }
+
+          );
 
       res.json({
-        message: "Logout successful"
+
+        message:
+          "Utilisateur modifié",
+
+        user
+
       });
 
-    });
+    } catch (error) {
 
-  } catch (error) {
+      res.status(500).json({
+        message: error.message
+      });
 
-    res.status(500).json({
-      message: error.message
-    });
+    }
 
   }
+);
 
-});
+/* =========================
+   DELETE USER
+========================= */
 
-// export
+router.delete(
+  "/delete/:id",
+
+  authSession,
+
+  isAdmin,
+
+  async (req, res) => {
+
+    try {
+
+      await Utilisateur
+        .findByIdAndDelete(
+          req.params.id
+        );
+
+      res.json({
+
+        message:
+          "Utilisateur supprimé"
+
+      });
+
+    } catch (error) {
+
+      res.status(500).json({
+        message: error.message
+      });
+
+    }
+
+  }
+);
+
+/* =========================
+   LOGOUT
+========================= */
+
+router.post(
+  "/logout",
+
+  async (req, res) => {
+
+    try {
+
+      if (req.session.userId) {
+
+        await Utilisateur
+          .findByIdAndUpdate(
+
+            req.session.userId,
+
+            {
+              last_login:
+                new Date()
+            }
+
+          );
+
+      }
+
+      req.session.destroy(
+
+        (err) => {
+
+          if (err) {
+
+            return res
+              .status(500)
+              .json({
+                message:
+                  "Erreur logout"
+              });
+
+          }
+
+          res.json({
+            message:
+              "Logout successful"
+          });
+
+        }
+
+      );
+
+    } catch (error) {
+
+      res.status(500).json({
+        message: error.message
+      });
+
+    }
+
+  }
+);
+
 module.exports = router;

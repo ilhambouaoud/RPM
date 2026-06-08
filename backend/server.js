@@ -64,6 +64,7 @@ app.use("/api", require("./routes/portiqueRoutes"));
 app.use("/api", require("./routes/reportRoutes"));
 app.use("/api", require("./routes/testRoutes"));
 app.use("/api/calibration", require("./routes/calibrationRoutes"));
+app.use("/api/users",require("./routes/userRoutes"));
 
 /* ------------------ Start Server ------------------ */
 
