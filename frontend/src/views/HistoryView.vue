@@ -8,6 +8,10 @@ import axios from "axios"
 
 const selectedHistory = ref("normal")
 
+const selectedNormalMode = ref("ALL")
+
+const dateFilter = ref("")
+
 const loading = ref(false)
 
 const normalHistory = ref<any[]>([])
@@ -24,7 +28,6 @@ const detailsData = ref<any[]>([])
 // =============================
 
 const loadNormalHistory = async () => {
-
   try {
 
     loading.value = true
@@ -35,16 +38,17 @@ const loadNormalHistory = async () => {
 
     normalHistory.value = res.data
 
-  } catch (err) {
+  }
+  catch (err) {
 
     console.error(err)
 
-  } finally {
+  }
+  finally {
 
     loading.value = false
 
   }
-
 }
 
 // =============================
@@ -63,11 +67,13 @@ const loadBalayageHistory = async () => {
 
     balayageHistory.value = res.data
 
-  } catch (err) {
+  }
+  catch (err) {
 
     console.error(err)
 
-  } finally {
+  }
+  finally {
 
     loading.value = false
 
@@ -76,10 +82,77 @@ const loadBalayageHistory = async () => {
 }
 
 // =============================
+// FILTER NORMAL HISTORY
+// =============================
+
+const filteredNormalHistory = computed(() => {
+
+  let data = [...normalHistory.value]
+
+  // CPS / CPM
+  if (selectedNormalMode.value !== "ALL") {
+
+    data = data.filter(
+      item =>
+        item.mode_mesure === selectedNormalMode.value
+    )
+
+  }
+
+  // DATE
+  if (dateFilter.value) {
+
+    data = data.filter(item => {
+
+      const sessionDate =
+        new Date(item.date_creation)
+          .toISOString()
+          .split("T")[0]
+
+      return sessionDate === dateFilter.value
+
+    })
+
+  }
+
+  return data
+
+})
+
+// =============================
+// FILTER BALAYAGE HISTORY
+// =============================
+
+const filteredBalayageHistory = computed(() => {
+
+  let data = [...balayageHistory.value]
+
+  if (dateFilter.value) {
+
+    data = data.filter(item => {
+
+      const sessionDate =
+        new Date(item.date_creation)
+          .toISOString()
+          .split("T")[0]
+
+      return sessionDate === dateFilter.value
+
+    })
+
+  }
+
+  return data
+
+})
+
+// =============================
 // DETAILS NORMAL
 // =============================
 
-const openNormalDetails = async (id: string) => {
+const openNormalDetails = async (
+  id: string
+) => {
 
   try {
 
@@ -87,13 +160,16 @@ const openNormalDetails = async (id: string) => {
       `http://localhost:3000/api/history/normal/${id}`
     )
 
-    selectedSession.value = res.data.session
+    selectedSession.value =
+      res.data.session
 
-    detailsData.value = res.data.mesures
+    detailsData.value =
+      res.data.mesures
 
     showDetails.value = true
 
-  } catch (err) {
+  }
+  catch (err) {
 
     console.error(err)
 
@@ -105,7 +181,9 @@ const openNormalDetails = async (id: string) => {
 // DETAILS BALAYAGE
 // =============================
 
-const openBalayageDetails = async (id: string) => {
+const openBalayageDetails = async (
+  id: string
+) => {
 
   try {
 
@@ -113,13 +191,16 @@ const openBalayageDetails = async (id: string) => {
       `http://localhost:3000/api/history/balayage/${id}`
     )
 
-    selectedSession.value = res.data.session
+    selectedSession.value =
+      res.data.session
 
-    detailsData.value = res.data.points
+    detailsData.value =
+      res.data.points
 
     showDetails.value = true
 
-  } catch (err) {
+  }
+  catch (err) {
 
     console.error(err)
 
@@ -142,24 +223,15 @@ const closeModal = () => {
 }
 
 // =============================
-// CURRENT TABLE
-// =============================
-
-const currentData = computed(() => {
-
-  return selectedHistory.value === "normal"
-    ? normalHistory.value
-    : balayageHistory.value
-
-})
-
-// =============================
 // FORMAT DATE
 // =============================
 
-const formatDate = (date: string) => {
+const formatDate = (
+  date: string
+) => {
 
-  return new Date(date).toLocaleString()
+  return new Date(date)
+    .toLocaleString()
 
 }
 
@@ -182,117 +254,181 @@ onMounted(async () => {
 <div class="space-y-6">
 
   <!-- HEADER -->
-  <div class="flex items-center justify-between">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
     <div>
       <h1 class="text-2xl font-bold">
         History Management
       </h1>
 
-      <p class="text-muted-foreground text-sm">
+      <p class="text-sm text-muted-foreground">
         Consultation des historiques des mesures radiologiques
       </p>
     </div>
 
-    <select
-      v-model="selectedHistory"
-      class="border rounded-lg px-3 py-2
-      bg-white text-black
-      dark:bg-slate-800 dark:text-white"
-    >
-      <option value="normal">
-        Normal Mode (CPS / CPM)
-      </option>
+    <div class="flex flex-wrap gap-3">
 
-      <option value="balayage">
-        Scan Mode
-      </option>
-    </select>
+      <!-- TYPE -->
+      <select
+        v-model="selectedHistory"
+        class="border rounded-lg px-3 py-2
+        bg-white text-black
+        dark:bg-slate-800 dark:text-white"
+      >
+        <option value="normal">
+          Normal Mode
+        </option>
+
+        <option value="balayage">
+          Scan Mode
+        </option>
+      </select>
+
+      <!-- CPS / CPM -->
+      <select
+        v-if="selectedHistory === 'normal'"
+        v-model="selectedNormalMode"
+        class="border rounded-lg px-3 py-2
+        bg-white text-black
+        dark:bg-slate-800 dark:text-white"
+      >
+        <option value="ALL">
+          All
+        </option>
+
+        <option value="CPS">
+          CPS
+        </option>
+
+        <option value="CPM">
+          CPM
+        </option>
+
+      </select>
+
+      <!-- DATE -->
+      <input
+        type="date"
+        v-model="dateFilter"
+        class="border rounded-lg px-3 py-2
+        bg-white text-black
+        dark:bg-slate-800 dark:text-white"
+      />
+
+    </div>
 
   </div>
 
   <!-- TABLE -->
   <div
     class="bg-white dark:bg-slate-900
-    rounded-xl shadow border overflow-hidden"
+    rounded-xl border shadow"
   >
 
-    <div
-      class="px-4 py-3 border-b
-      font-semibold text-lg"
-    >
+    <div class="px-4 py-3 border-b font-semibold">
       Sessions History
     </div>
 
-    <div v-if="loading" class="p-6 text-center">
+    <div
+      v-if="loading"
+      class="p-6 text-center"
+    >
       Loading...
     </div>
 
-    <table
-      v-else
-      class="w-full text-sm"
-    >
+   <div
+  v-else
+  class="max-h-[500px] overflow-y-auto"
+>
+  <table class="w-full text-sm">
 
-      <!-- ================= NORMAL ================= -->
-
+      <!-- NORMAL -->
       <thead
         v-if="selectedHistory === 'normal'"
-        class="bg-slate-100 dark:bg-slate-800"
+        class="bg-slate-100 dark:bg-slate-800 sticky top-0 z-10"
       >
         <tr>
 
-          <th class="p-3 text-left">Date</th>
+          <th class="p-3 text-left">
+            Date
+          </th>
 
-          <th class="p-3 text-left">Mode</th>
+          <th class="p-3 text-left">
+            Mode
+          </th>
 
-          <th class="p-3 text-left">LLD</th>
+          <th class="p-3 text-left">
+            LLD
+          </th>
 
-          <th class="p-3 text-left">HLD</th>
+          <th class="p-3 text-left">
+            HLD
+          </th>
 
-          <th class="p-3 text-left">HT</th>
+          <th class="p-3 text-left">
+            HT
+          </th>
 
-          <th class="p-3 text-left">Average</th>
+          <th class="p-3 text-left">
+            Average
+          </th>
 
-          <th class="p-3 text-left">Measurements</th>
+          <th class="p-3 text-left">
+            Measurements
+          </th>
 
-          <th class="p-3 text-center">Action</th>
+          <th class="p-3 text-center">
+            Action
+          </th>
 
         </tr>
       </thead>
 
-      <!-- ================= BALAYAGE ================= -->
-
+      <!-- BALAYAGE -->
       <thead
         v-else
-        class="bg-slate-100 dark:bg-slate-800"
+        class="bg-slate-100 dark:bg-slate-800 sticky top-0 z-10"
       >
         <tr>
 
-          <th class="p-3 text-left">Date</th>
+          <th class="p-3 text-left">
+            Date
+          </th>
 
-          <th class="p-3 text-left">LLD Start</th>
+          <th class="p-3 text-left">
+            LLD Start
+          </th>
 
-          <th class="p-3 text-left">ΔV</th>
+          <th class="p-3 text-left">
+            ΔV
+          </th>
 
-          <th class="p-3 text-left">Vmax</th>
+          <th class="p-3 text-left">
+            Vmax
+          </th>
 
-          <th class="p-3 text-left">Average CPS</th>
+          <th class="p-3 text-left">
+            Average CPS
+          </th>
 
-          <th class="p-3 text-left">Points</th>
+          <th class="p-3 text-left">
+            Points
+          </th>
 
-          <th class="p-3 text-center">Action</th>
+          <th class="p-3 text-center">
+            Action
+          </th>
 
         </tr>
       </thead>
 
       <tbody>
 
-        <!-- ================= NORMAL ================= -->
-
+        <!-- NORMAL -->
         <template v-if="selectedHistory === 'normal'">
 
           <tr
-            v-for="item in normalHistory"
+            v-for="item in filteredNormalHistory"
             :key="item._id"
             class="border-b hover:bg-slate-50 dark:hover:bg-slate-800"
           >
@@ -305,14 +441,16 @@ onMounted(async () => {
 
               <span
                 v-if="item.mode_mesure === 'CPS'"
-                class="px-2 py-1 rounded bg-green-100 text-green-700"
+                class="px-2 py-1 rounded
+                bg-green-100 text-green-700"
               >
                 CPS
               </span>
 
               <span
                 v-else
-                class="px-2 py-1 rounded bg-blue-100 text-blue-700"
+                class="px-2 py-1 rounded
+                bg-blue-100 text-blue-700"
               >
                 CPM
               </span>
@@ -357,12 +495,11 @@ onMounted(async () => {
 
         </template>
 
-        <!-- ================= BALAYAGE ================= -->
-
+        <!-- BALAYAGE -->
         <template v-else>
 
           <tr
-            v-for="item in balayageHistory"
+            v-for="item in filteredBalayageHistory"
             :key="item._id"
             class="border-b hover:bg-slate-50 dark:hover:bg-slate-800"
           >
@@ -412,31 +549,26 @@ onMounted(async () => {
       </tbody>
 
     </table>
-
+</div>
   </div>
 
-  <!-- ================= MODAL ================= -->
-
+  <!-- DETAILS MODAL -->
   <div
     v-if="showDetails"
-    class="fixed inset-0
-    bg-black/50
-    flex items-center justify-center
-    z-50"
+    class="fixed inset-0 bg-black/50
+    flex items-center justify-center z-50"
   >
 
     <div
       class="bg-white dark:bg-slate-900
       rounded-xl shadow-xl
-      w-[90%] max-w-4xl
-      max-h-[80vh]
+      w-[90%] max-w-5xl
+      max-h-[85vh]
       overflow-auto"
     >
 
-      <!-- HEADER -->
-
       <div
-        class="flex items-center justify-between
+        class="flex justify-between items-center
         border-b p-4"
       >
 
@@ -446,26 +578,21 @@ onMounted(async () => {
 
         <button
           @click="closeModal"
-          class="text-red-500 font-bold text-xl"
+          class="text-red-500 text-xl font-bold"
         >
           ✕
         </button>
 
       </div>
 
-      <!-- CONTENT -->
-
       <div class="p-4">
 
         <table class="w-full text-sm">
 
-          <thead
-            class="bg-slate-100 dark:bg-slate-800"
-          >
+          <thead class="bg-slate-100 dark:bg-slate-800 sticky top-0 z-10">
 
-            <tr
-              v-if="selectedHistory === 'normal'"
-            >
+            <tr v-if="selectedHistory === 'normal'">
+
               <th class="p-3 text-left">
                 Timestamp
               </th>
@@ -473,11 +600,11 @@ onMounted(async () => {
               <th class="p-3 text-left">
                 Value
               </th>
+
             </tr>
 
-            <tr
-              v-else
-            >
+            <tr v-else>
+
               <th class="p-3 text-left">
                 Voltage
               </th>
@@ -485,15 +612,14 @@ onMounted(async () => {
               <th class="p-3 text-left">
                 CPS
               </th>
+
             </tr>
 
           </thead>
 
           <tbody>
 
-            <template
-              v-if="selectedHistory === 'normal'"
-            >
+            <template v-if="selectedHistory === 'normal'">
 
               <tr
                 v-for="(m,index) in detailsData"
@@ -513,9 +639,7 @@ onMounted(async () => {
 
             </template>
 
-            <template
-              v-else
-            >
+            <template v-else>
 
               <tr
                 v-for="(p,index) in detailsData"

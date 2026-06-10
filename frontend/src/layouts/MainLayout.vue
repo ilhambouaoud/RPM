@@ -12,7 +12,7 @@ import {
   Target,
 } from 'lucide-vue-next'
 import { UsersIcon } from 'lucide-vue-next'
-//import { History } from 'lucide-vue-next'
+import { History } from 'lucide-vue-next'
 
 const route = useRoute()
 
@@ -50,8 +50,7 @@ const items = [
   {
     name: 'History',
     path: '/history',
-    icon: LayoutDashboard
-    //icon: History 
+    icon: History 
   },
 
 ]
