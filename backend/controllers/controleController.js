@@ -2,7 +2,11 @@ const { publishMessage } = require("../mqtt/mqttClient");
 const { client } = require("../mqtt/mqttClient");
 const HT_DEFAULT = 2000
 
-exports.sendTrame = (req, res) => {
+const ModeNormale = require("../models/ModeNormale");
+const ModeBalayage = require("../models/ModeBalayage");
+const sessionState = require("../state/sessionState");
+
+exports.sendTrame = async (req, res) => {
 
   console.log("🔥 API sendTrame appelée");
 
@@ -44,6 +48,26 @@ exports.sendTrame = (req, res) => {
       }
 
       trame = `#${mode},${CP},${LLD},${HLD},${HT ?? HT_DEFAULT},${B},${A}$`;
+      const session = await ModeNormale.create({
+
+  LLD: Number(LLD),
+
+  HLD: Number(HLD),
+
+  HT: Number(HT ?? HT_DEFAULT),
+
+ mode_mesure: Number(CP) === 0 ? "CPS" : "CPM",
+
+  mesures: []
+
+});
+
+sessionState.currentModeNormalId = session._id;
+sessionState.lastCPMTime = null;
+console.log(
+  "✅ Session normale créée :",
+  sessionState.currentModeNormalId
+);
     }
 
     // ================= MODE 1 : SPECTRUM =================
@@ -62,6 +86,24 @@ exports.sendTrame = (req, res) => {
       }
 
       trame = `#${mode},${LLD},${dV},${Vmax},${B},${A}$`;
+      const session = await ModeBalayage.create({
+
+  LLD_depart: Number(LLD),
+
+  dV: Number(dV),
+
+  Vmax: Number(Vmax),
+
+  points: []
+
+});
+
+sessionState.currentModeBalayageId = session._id;
+
+console.log(
+  "✅ Session balayage créée :",
+  sessionState.currentModeBalayageId
+);
     }
 
     // ================= MODE INVALIDE =================

@@ -12,6 +12,7 @@ import {
   Target,
 } from 'lucide-vue-next'
 import { UsersIcon } from 'lucide-vue-next'
+//import { History } from 'lucide-vue-next'
 
 const route = useRoute()
 
@@ -45,7 +46,13 @@ const items = [
     name: 'Porticos',
     path: '/portiques',
     icon: Building2
-  }
+  },
+  {
+    name: 'History',
+    path: '/history',
+    icon: LayoutDashboard
+    //icon: History 
+  },
 
 ]
 

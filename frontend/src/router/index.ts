@@ -95,6 +95,11 @@ const router = createRouter({
       requiresAdmin: true
     }
    },
+   {
+    path: 'history',
+    name: 'History',
+    component: () => import('@/views/HistoryView.vue')
+  },
 
   ]
 }

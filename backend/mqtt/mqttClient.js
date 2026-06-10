@@ -1,4 +1,10 @@
+const sessionState = require("../state/sessionState");
+const ModeNormale = require("../models/ModeNormale");
+const ModeBalayage = require("../models/ModeBalayage");
 const mqtt = require("mqtt");
+
+const { encrypt } =require("../utils/crypto");
+
 
 // 🔥 Connexion HiveMQ Cloud
 const client = mqtt.connect(
@@ -17,14 +23,15 @@ client.on("connect", () => {
 
   console.log("✅ MQTT CONNECTÉ");
 
-  // 🔥 Abonnement au topic
   client.subscribe("stm32/data", (err) => {
-  if (err) {
-    console.log("❌ Subscribe error:", err.message);
-  } else {
-    console.log("✅ Subscribe OK : stm32/data");
-  }
-});
+
+    if (err) {
+      console.log("❌ Subscribe error:", err.message);
+    } else {
+      console.log("✅ Subscribe OK : stm32/data");
+    }
+
+  });
 
 });
 
@@ -60,28 +67,110 @@ function initMQTT(io) {
 
   console.log("✅ MQTT INIT OK");
 
-  // 🔥 Réception des messages
-client.on("message", (topic, message) => {
+  client.on("message", async (topic, message) => {
 
-  const raw = message.toString();
-  console.log("📩 MQTT RAW:", raw);
+    const raw = message.toString();
+    console.log("📩 MQTT RAW:", raw);
 
-  let parsed = {};
+    let parsed = {};
 
-  try {
-    parsed = JSON.parse(raw);
-  } catch (e) {
-    // si ce n'est pas JSON → on essaie de parser manuellement
-    console.log("⚠️ Not JSON, fallback parsing");
-
-    if (raw.includes("cps")) {
-      const value = raw.match(/\d+/);
-      parsed = { cps: value ? Number(value[0]) : 0 };
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      console.log("⚠️ Not JSON, fallback parsing");
+      return;
     }
-  }
 
-  io.emit("mqttData", parsed);
-});
+    // ================= MODE NORMAL =================
+if (
+  parsed.type === "CPS"
+  &&
+  sessionState.currentModeNormalId
+) {
+
+  await ModeNormale.findByIdAndUpdate(
+    sessionState.currentModeNormalId,
+    {
+      $push: {
+        mesures: {
+          value: encrypt(parsed.value)
+        }
+      }
+    }
+  );
+
+}
+
+    if (
+  parsed.type === "CPM"
+  &&
+  sessionState.currentModeNormalId
+) {
+
+  const now = Date.now();
+
+  if (
+    !sessionState.lastCPMTime ||
+    now - sessionState.lastCPMTime >= 60000
+  ) {
+
+    await ModeNormale.findByIdAndUpdate(
+      sessionState.currentModeNormalId,
+      {
+        $push: {
+          mesures: {
+            value: encrypt(parsed.value)
+          }
+        }
+      }
+    );
+
+    sessionState.lastCPMTime = now;
+
+    console.log(
+      "✅ CPM sauvegardé (1 minute)",
+      parsed.value
+    );
+  }
+}
+
+    // ================= MODE BALAYAGE =================
+
+if (
+  parsed.type === "SCAN"
+  &&
+  sessionState.currentModeBalayageId
+) {
+
+  const values = parsed.raw.split(",");
+
+  const tension = Number(values[1]);
+  const cps = Number(values[2]);
+
+  await ModeBalayage.findByIdAndUpdate(
+    sessionState.currentModeBalayageId,
+    {
+      $push: {
+        points: {
+          tension,
+          cps: encrypt(cps)
+        }
+      }
+    }
+  );
+
+  console.log(
+    "✅ Point balayage sauvegardé :",
+    tension,
+    cps
+  );
+}
+
+    // ================= ENVOI DASHBOARD =================
+
+    io.emit("mqttData", parsed);
+
+  });
 
 }
 

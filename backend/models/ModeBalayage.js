@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const PointSchema = new mongoose.Schema({
   tension: Number,
-  cps: Number
+  cps: String
 }, { _id: false });
 
 const ModeBalayageSchema = new mongoose.Schema({

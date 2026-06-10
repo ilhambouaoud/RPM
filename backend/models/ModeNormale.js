@@ -23,9 +23,15 @@ const ModeNormaleSchema = new mongoose.Schema({
     type: String
   },
 
-  mesure: {
-    type: Number
-  },
+mesures: [
+  {
+    value: String,
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  }
+],
 
   date_creation: {
     type: Date,

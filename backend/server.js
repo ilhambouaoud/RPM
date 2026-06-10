@@ -65,6 +65,7 @@ app.use("/api", require("./routes/reportRoutes"));
 app.use("/api", require("./routes/testRoutes"));
 app.use("/api/calibration", require("./routes/calibrationRoutes"));
 app.use("/api/users",require("./routes/userRoutes"));
+app.use("/api/history", require("./routes/historyRoutes"));
 
 /* ------------------ Start Server ------------------ */
 
