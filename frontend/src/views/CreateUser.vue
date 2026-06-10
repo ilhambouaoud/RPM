@@ -304,30 +304,37 @@
           >
 
 
-            <Button
-              type="submit"
-              class="h-12 px-8 rounded-xl
-              bg-green-600
-              hover:bg-green-700  
-              text-white font-medium
-              transition-all duration-300
-              shadow-lg hover:shadow-xl
-              hover:scale-[1.02]
-            dark:bg-blue-600
-            dark:hover:bg-blue-700"
-            >
-              Create User
-            </Button>
+<div class="flex items-center gap-4 w-full">
+  <button
+    type="button"
+    @click="goBack"
+    class="h-12 px-8 rounded-xl border hover:bg-muted transition"
+  >
+    ← Back
+  </button>
 
-            <button
-              type="button"
-              @click="resetForm"
-              class="h-12 px-8 rounded-xl
-              border hover:bg-muted
-              transition"
-            >
-              Reset
-            </button>
+  <button
+    type="button"
+    @click="resetForm"
+    class="h-12 px-8 rounded-xl border hover:bg-muted transition"
+  >
+    Reset
+  </button>
+
+  <Button
+    type="submit"
+    class="ml-auto h-12 px-8 rounded-xl
+           bg-green-600 hover:bg-green-700
+           text-white font-medium
+           transition-all duration-300
+           shadow-lg hover:shadow-xl
+           hover:scale-[1.02]
+           dark:bg-blue-600
+           dark:hover:bg-blue-700"
+  >
+    Create User
+  </Button>
+</div>
 
           </div>
 
@@ -343,7 +350,9 @@
 <script setup>
 import axios from "axios"
 import { reactive, computed } from "vue"
+import { useRouter } from "vue-router"
 
+const router = useRouter()
 
 const form = reactive({
   username: "",
@@ -407,5 +416,10 @@ const createUser = async () => {
   )
 
 }
+}
+
+
+const goBack = () => {
+  router.back()
 }
 </script>
