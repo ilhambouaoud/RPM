@@ -9,7 +9,8 @@ const ModeBalayageSchema = new mongoose.Schema({
 
   portique_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Portique"
+    ref: "Portique",
+    required: true
   },
 
   LLD_depart: {

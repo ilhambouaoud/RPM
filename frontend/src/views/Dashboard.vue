@@ -313,7 +313,7 @@ const sendTrame = async () => {
     }
     console.log("📤 PAYLOAD:", payload)
     console.log("📤 PAYLOAD FINAL:", JSON.stringify(payload))
-
+    payload.portiqueId = portiqueId 
     await axios.post("http://localhost:3000/api/send-trame", payload)
 
     console.log("✅ trame envoyée")

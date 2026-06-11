@@ -11,25 +11,29 @@ const {
 
 // ================= NORMAL =================
 
+// historique d'un portique
 router.get(
-  "/normal",
+  "/normal/:portiqueId",
   getNormalHistory
 );
 
+// détails d'une session
 router.get(
-  "/normal/:id",
+  "/normal/details/:id",
   getNormalDetails
 );
 
 // ================= BALAYAGE =================
 
+// historique d'un portique
 router.get(
-  "/balayage",
+  "/balayage/:portiqueId",
   getBalayageHistory
 );
 
+// détails d'une session
 router.get(
-  "/balayage/:id",
+  "/balayage/details/:id",
   getBalayageDetails
 );
 

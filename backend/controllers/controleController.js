@@ -49,16 +49,16 @@ exports.sendTrame = async (req, res) => {
 
       trame = `#${mode},${CP},${LLD},${HLD},${HT ?? HT_DEFAULT},${B},${A}$`;
       const session = await ModeNormale.create({
+        portique_id: req.body.portiqueId,
+        LLD: Number(LLD),
 
-  LLD: Number(LLD),
+        HLD: Number(HLD),
 
-  HLD: Number(HLD),
+        HT: Number(HT ?? HT_DEFAULT),
 
-  HT: Number(HT ?? HT_DEFAULT),
+        mode_mesure: Number(CP) === 0 ? "CPS" : "CPM",
 
- mode_mesure: Number(CP) === 0 ? "CPS" : "CPM",
-
-  mesures: []
+      mesures: []
 
 });
 
@@ -87,6 +87,7 @@ console.log(
 
       trame = `#${mode},${LLD},${dV},${Vmax},${B},${A}$`;
       const session = await ModeBalayage.create({
+      portique_id: req.body.portiqueId,
 
   LLD_depart: Number(LLD),
 

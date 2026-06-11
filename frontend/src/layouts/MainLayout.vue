@@ -49,7 +49,7 @@ const items = [
   },
   {
     name: 'History',
-    path: '/history',
+    path: `/portique/${portiqueId.value}/history`,
     icon: History 
   },
 

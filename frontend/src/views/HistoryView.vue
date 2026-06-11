@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue"
 import axios from "axios"
+import { useRoute } from "vue-router"
 
+
+
+const route = useRoute()
+const portiqueId = computed(() => {
+  return route.params.id as string
+})
 // =============================
 // STATE
 // =============================
@@ -33,10 +40,11 @@ const loadNormalHistory = async () => {
     loading.value = true
 
     const res = await axios.get(
-      "http://localhost:3000/api/history/normal"
+       `http://localhost:3000/api/history/normal/${portiqueId.value}`
     )
-
+console.log("DATA =", res.data)
     normalHistory.value = res.data
+
 
   }
   catch (err) {
@@ -62,7 +70,7 @@ const loadBalayageHistory = async () => {
     loading.value = true
 
     const res = await axios.get(
-      "http://localhost:3000/api/history/balayage"
+      `http://localhost:3000/api/history/balayage/${portiqueId.value}`
     )
 
     balayageHistory.value = res.data
@@ -157,7 +165,7 @@ const openNormalDetails = async (
   try {
 
     const res = await axios.get(
-      `http://localhost:3000/api/history/normal/${id}`
+       `http://localhost:3000/api/history/normal/details/${id}`
     )
 
     selectedSession.value =
@@ -188,7 +196,7 @@ const openBalayageDetails = async (
   try {
 
     const res = await axios.get(
-      `http://localhost:3000/api/history/balayage/${id}`
+      `http://localhost:3000/api/history/balayage/details/${id}`
     )
 
     selectedSession.value =
@@ -240,7 +248,7 @@ const formatDate = (
 // =============================
 
 onMounted(async () => {
-
+  console.log("PORTIQUE =", portiqueId.value)
   await Promise.all([
     loadNormalHistory(),
     loadBalayageHistory()

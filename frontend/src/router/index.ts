@@ -96,9 +96,13 @@ const router = createRouter({
     }
    },
    {
-    path: 'history',
-    name: 'History',
-    component: () => import('@/views/HistoryView.vue')
+
+
+  path: 'portique/:id/history',
+  name: 'History',
+  component: () => import('@/views/HistoryView.vue')
+
+
   },
 
   ]
