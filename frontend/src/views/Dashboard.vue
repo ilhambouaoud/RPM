@@ -21,7 +21,7 @@ import barrierClose from "@/assets/pictures/barriereFe.png"
 import alarmOff from "@/assets/pictures/alarmOff.png"
 
 // ================= CHART =================
-import { Line, Scatter } from "vue-chartjs"
+import { Line } from "vue-chartjs"
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -134,7 +134,7 @@ const initSocket = () => {
       } else if (data.startsWith("#")) {
         const parts = data.replace("#", "").split(",")
         const tension = Number(parts[0])
-        const hld = Number(parts[1])
+        //const hld = Number(parts[1])
         const cps = Number(parts[2])
 
         if (!isNaN(cps) && !isNaN(tension)) {
