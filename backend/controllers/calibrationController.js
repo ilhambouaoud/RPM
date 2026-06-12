@@ -1,4 +1,4 @@
-const CalibrationModel = require("../models/CalibrationModel");
+const CalibrationModel = require("../models/calibrationModel");
 
 // 📌 API : reçoit données du frontend calibration
 const calculateCalibration = async (req, res) => {
