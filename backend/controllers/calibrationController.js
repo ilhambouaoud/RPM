@@ -1,23 +1,28 @@
-const CalibrationModel = require("../models/calibrationModel")
+const CalibrationModel = require("../models/CalibrationModel");
 
+// 📌 API : reçoit données du frontend calibration
 const calculateCalibration = async (req, res) => {
 
   try {
 
-    const { source1, source2 } = req.body
+    // 📌 données envoyées par l’interface web
+    const { source1, source2 } = req.body;
 
-    const result = await CalibrationModel.calculateAndSave(source1, source2)
+    // 📌 appel du modèle métier
+    const result = await CalibrationModel.calculateAndSave(source1, source2);
 
-    res.json(result)
+    // 📌 réponse au frontend
+    res.json(result);
 
   } catch (error) {
 
+    // 📌 gestion erreur serveur
     res.status(500).json({
       error: error.message
-    })
+    });
   }
-}
+};
 
 module.exports = {
   calculateCalibration
-}
+};

@@ -1,31 +1,27 @@
 const mongoose = require("mongoose");
 
+// 📌 chaque point du balayage
 const PointSchema = new mongoose.Schema({
-  tension: Number,
-  cps: String
+
+  tension: Number,   // amplitude moyenne du signal
+  cps: Number,       // fréquence comptée
+  energy: Number     // 🔥 énergie calculée via calibration
+
 }, { _id: false });
 
+// 📌 session balayage complète
 const ModeBalayageSchema = new mongoose.Schema({
 
   portique_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Portique",
-    required: true
+    ref: "Portique"
   },
 
-  LLD_depart: {
-    type: Number
-  },
+  LLD_depart: Number,
+  dV: Number,
+  Vmax: Number,
 
-  dV: {
-    type: Number
-  },
-
-  Vmax: {
-    type: Number
-  },
-
-  points: [PointSchema],
+  points: [PointSchema], // 📌 tableau de mesures
 
   date_creation: {
     type: Date,
