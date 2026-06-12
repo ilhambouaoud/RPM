@@ -110,7 +110,7 @@ const router = createRouter({
 ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
 
   const username = localStorage.getItem("username")
 
