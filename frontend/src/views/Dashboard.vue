@@ -178,35 +178,55 @@ const initSocket = () => {
         cpm: data.value
       })
     } else if (type === "scan") {
-      // Récupérer les données directement
-      const tension = data.tension || Number(data.raw?.split(",")[1]) || 0
-      const cps = data.cps || Number(data.raw?.split(",")[2]) || 0
-      const energy = data.energy || 0
 
-      console.log(`📊 JSON SCAN - Tension: ${tension}, CPS: ${cps}, Energy: ${energy}`);
+  // Récupérer les données
+  const tension = data.tension || Number(data.raw?.split(",")[1]) || 0
+  const cps = data.cps || Number(data.raw?.split(",")[2]) || 0
+  const energy = data.energy || 0
 
-      if (!isNaN(cps) && !isNaN(tension) && cps > 0) {
-        const existingIndex = spectrumData.value.findIndex(p => Math.abs(p.tension - tension) < 0.01)
-        
-        if (existingIndex !== -1) {
-          spectrumData.value[existingIndex].cps = cps
-          spectrumData.value[existingIndex].energy = energy
-        } else {
-          spectrumData.value.push({
-            tension: tension,
-            cps: cps,
-            energy: energy
-          })
-        }
-        
-        // Trier par tension
-        spectrumData.value.sort((a, b) => a.tension - b.tension)
-        // Forcer la réactivité
-        spectrumData.value = [...spectrumData.value]
-        
-        console.log(`📊 Données spectrum mises à jour: ${spectrumData.value.length} points`);
-      }
+  // ✅ Mettre à jour le CPS affiché dans la carte
+  spectrum.value.currentCps = cps
+
+  console.log(`📊 JSON SCAN - Tension: ${tension}, CPS: ${cps}, Energy: ${energy}`)
+  console.log("📡 MQTT JSON =", data)
+
+  if (!isNaN(cps) && !isNaN(tension) && cps > 0) {
+
+    const existingIndex = spectrumData.value.findIndex(
+      p => Math.abs(p.tension - tension) < 0.01
+    )
+
+    if (existingIndex !== -1) {
+
+      spectrumData.value[existingIndex].cps = cps
+      spectrumData.value[existingIndex].energy = energy
+
+    } else {
+
+      spectrumData.value.push({
+        tension,
+        cps,
+        energy
+      })
+
     }
+
+    // Trier par tension
+    spectrumData.value.sort((a, b) => a.tension - b.tension)
+
+    // Forcer la réactivité Vue
+    spectrumData.value = [...spectrumData.value]
+
+    console.log(
+      `📊 Données spectrum mises à jour: ${spectrumData.value.length} points`
+    )
+
+    console.log(
+      `📈 CPS affiché: ${spectrum.value.currentCps}`
+    )
+  }
+}
+
   }
 
   socket.on("mqttData", handler)
@@ -255,6 +275,7 @@ const sendTrame = async () => {
 
     if (selectedMode.value === 0) {
       payload = {
+        portiqueId: portiqueId,
         mode: 0,
         LLD: Number(normal.value.lld),
         HLD: Number(normal.value.hld),
@@ -270,6 +291,7 @@ const sendTrame = async () => {
       }
     } else if (selectedMode.value === 1) {
       payload = {
+        portiqueId: portiqueId,
         mode: 1,
         LLD: Number(spectrum.value.lld),
         dV: Number(spectrum.value.dv),
@@ -488,6 +510,7 @@ const startSpectrum = async () => {
   await new Promise(resolve => setTimeout(resolve, 100));
   
   await axios.post("http://localhost:3000/api/send-trame", {
+    portiqueId: portiqueId,
     mode: 1,
     LLD: spectrum.value.lld,
     dV: spectrum.value.dv,
